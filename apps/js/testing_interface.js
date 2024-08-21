@@ -379,3 +379,94 @@ $(document).ready(function () {
         }
     });
 });
+
+async function processExplanations(files) {
+    const explanations = [];
+    const readPromises = Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (json.explanation) {
+                        resolve(json.explanation);
+                    } else {
+                        reject('No explanation field in JSON');
+                    }
+                } catch (error) {
+                    reject('Invalid JSON file');
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    });
+
+    try {
+        const texts = await Promise.all(readPromises);
+        explanations.push(...texts);
+        const commonWords = getCommonWords(explanations);
+        displayCommonWords(commonWords);
+    } catch (error) {
+        console.error('Error processing files:', error);
+    }
+}
+
+function getCommonWords(explanations) {
+    const wordCounts = {};
+    explanations.forEach(explanation => {
+        const words = explanation.toLowerCase().split(/\s+/);
+        words.forEach(word => {
+            if (word.length > 1) { // Ignore single-character words
+                wordCounts[word] = (wordCounts[word] || 0) + 1;
+            }
+        });
+    });
+    return Object.entries(wordCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20); // Show top 20 words
+}
+
+function displayCommonWords(commonWords) {
+    const commonWordsDiv = document.getElementById('common_words');
+    commonWordsDiv.innerHTML = '';
+    commonWords.forEach(([word, count]) => {
+        const button = document.createElement('button');
+        button.textContent = `${word} (${count})`;
+        button.onclick = () => addWordToExplanation(word);
+        commonWordsDiv.appendChild(button);
+    });
+}
+
+function addWordToExplanation(word) {
+    const explanationInput = document.getElementById('explanation_input');
+    explanationInput.value += word + ' ';
+    explanationInput.focus();
+}
+
+function initializeExplanationFeatures() {
+    const loadButton = document.getElementById('load_common_words');
+
+    loadButton.onclick = async () => {
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            const files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+                    const file = await entry.getFile();
+                    files.push(file);
+                }
+            }
+            if (files.length > 0) {
+                await processExplanations(files);
+            } else {
+                console.log('No JSON files found in the selected directory');
+            }
+        } catch (err) {
+            console.error('Error selecting folder:', err);
+        }
+    };
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', initializeExplanationFeatures);
