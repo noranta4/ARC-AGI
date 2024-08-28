@@ -424,7 +424,7 @@ function getCommonWords(explanations) {
     });
     return Object.entries(wordCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 20); // Show top 20 words
+        .slice(0, 200); // Show top 200 words
 }
 
 function displayCommonWords(commonWords) {
