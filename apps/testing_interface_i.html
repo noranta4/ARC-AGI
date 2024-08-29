@@ -8,12 +8,40 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="js/common.js"></script>
         <script src="js/testing_interface.js"></script>
+        <script src="js/explanation_handler.js"></script>
 
         <link rel="stylesheet" type="text/css" href="css/common.css">
         <link rel="stylesheet" type="text/css" href="css/testing_interface.css">
 
         <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 
+        <script>
+            function toggleDemonstration() {
+                const demoView = document.getElementById('demonstration_examples_view');
+                demoView.style.display = demoView.style.display === 'none' ? 'block' : 'none';
+            }
+
+            // function loadExplanation() {
+            //     // Get the task name and number from the label element
+            //     const taskNameElement = document.getElementById('task_name');
+            //     const taskNameFull = taskNameElement.textContent.trim();
+            //     const [taskNumberFull, taskName] = taskNameFull.split('    ').map(s => s.trim());
+            //     const explanationUrl = `https://raw.githubusercontent.com/noranta4/ARC-AGI/master/data/explanations/${taskName}.json`;
+            //     // const explanationUrl = `https://raw.githubusercontent.com/noranta4/ARC-AGI/master/data/explanations/1b2d62fb.json`;
+            //     $.getJSON(explanationUrl, function(data) {
+            //         document.getElementById('explanation_display').textContent = data.explanation;
+            //     })
+            //     .fail(function(jqXHR, textStatus, errorThrown) {
+            //         console.error('Error loading explanation:', textStatus, errorThrown);
+            //         document.getElementById('explanation_display').textContent = 'Explanation not available. Toggle task demonstration and submit your own explanation. Save it in data/explanations/. When you are done for the day, do not forget to pull request!';
+            //     });
+            // }
+
+
+
+
+
+        </script>
     </head>
     <body>
         <div id="modal_bg">
@@ -21,14 +49,19 @@
                 <div>Welcome to the ARC testing interface. <br /> Choose a task file to start, or click on "Random task" to load one from the ARC project on GitHub.</div>
                 <br />
                 <input type="file" class="load_task"/>
-                <button onclick="randomTask()" id="random_task_btn">Random task</button>
+                <button onclick="randomTaskExpl()" id="random_task_btn">Random task</button>
             </div>
         </div>
         <div id="workspace">
+            <button onclick="toggleDemonstration()">Toggle Task Demonstration</button>
 
-            <div id="demonstration_examples_view">
+            <div id="demonstration_examples_view" style="display: none;">
                 <div class="text" id="task_demo_header">Task demonstration</div>
                 <div id="task_preview"></div>
+                <textarea id="explanation_input" placeholder="Write your explanation here..."></textarea>
+                <button id="submit_explanation_btn">Submit explanation</button>
+                <button id="load_common_words">Load common words from explanation files</button>
+                <div id="common_words"></div>
             </div>
 
             <div id="evaluation_view">
@@ -41,13 +74,18 @@
                     <div id="evaluation_input" class="selectable_grid"></div>
                 </div>
 
+                <div id="explanation_section">
+                    <h3>Explanation to build the output:</h3>
+                    <p id="explanation_display"></p>
+                </div>
+
                 <div id="evaluation_output_editor">
 
                     <div id="load_task_control_btns">
                         <label for="load_task_file_input">Load task JSON: </label>
                         <input type="file" id="load_task_file_input" class="load_task" style="display: none;"/>
                         <input type="button" value="Browse..." onclick="document.getElementById('load_task_file_input').click();" />
-                        <button onclick="randomTask()" id="random_task_btn"> Random... </button>
+                        <button onclick="randomTaskExpl()" id="random_task_btn"> Random... </button>
                         <p>
                         <label id='task_name' for="random_task_btn"> Task name: </label>
                         <p>

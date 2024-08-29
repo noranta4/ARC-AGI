@@ -200,6 +200,46 @@ function randomTask() {
     });
 }
 
+
+function randomTaskExpl() {
+    var subset = "training";
+    $.getJSON("https://api.github.com/repos/fchollet/ARC/contents/data/" + subset, function(tasks) {
+        var task_index = Math.floor(Math.random() * tasks.length)
+        var task = tasks[task_index];
+        $.getJSON(task["download_url"], function(json) {
+            try {
+                train = json['train'];
+                test = json['test'];
+            } catch (e) {
+                errorMsg('Bad file format');
+                return;
+            }
+            loadJSONTask(train, test);
+            //$('#load_task_file_input')[0].value = "";
+            infoMsg("Loaded task training/" + task["name"]);
+            display_task_name(task['name'], task_index, tasks.length);
+        
+        const explanationUrl = `https://raw.githubusercontent.com/noranta4/ARC-AGI/master/data/explanations/${task["name"]}`;
+        // const explanationUrl = `https://raw.githubusercontent.com/noranta4/ARC-AGI/master/data/explanations/1b2d62fb.json`;
+        $.getJSON(explanationUrl, function(data) {
+            document.getElementById('explanation_display').textContent = data.explanation;
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error loading explanation:', textStatus, errorThrown);
+            document.getElementById('explanation_display').textContent = 'Explanation not available. Toggle task demonstration and submit your own explanation. Save it in data/explanations/. When you are done for the day, do not forget to pull request!';
+        });
+        
+        })
+        .error(function(){
+          errorMsg('Error loading task');
+        });
+    })
+    .error(function(){
+      errorMsg('Error loading task list');
+    });
+}
+
+
 function nextTestInput() {
     if (TEST_PAIRS.length <= CURRENT_TEST_PAIR_INDEX + 1) {
         errorMsg('No next test input. Pick another file?')
